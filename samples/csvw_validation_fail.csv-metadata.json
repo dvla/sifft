@@ -1,0 +1,75 @@
+{
+  "@context": "http://www.w3.org/ns/csvw",
+  "url": "csvw_validation_fail.csv",
+  "tableSchema": {
+    "columns": [
+      {
+        "name": "product_id",
+        "datatype": "string",
+        "required": true,
+        "constraints": {
+          "unique": true,
+          "pattern": "^P\\d{3}$"
+        }
+      },
+      {
+        "name": "name",
+        "datatype": "string",
+        "required": true,
+        "constraints": {
+          "minLength": 3,
+          "maxLength": 30
+        }
+      },
+      {
+        "name": "category",
+        "datatype": "string",
+        "required": true,
+        "constraints": {
+          "enum": ["electronics", "clothing", "home"]
+        }
+      },
+      {
+        "name": "price",
+        "datatype": "number",
+        "required": true,
+        "constraints": {
+          "minimum": 0,
+          "maximum": 1000
+        }
+      },
+      {
+        "name": "quantity",
+        "datatype": "integer",
+        "required": true,
+        "constraints": {
+          "minimum": 0,
+          "maximum": 10000
+        }
+      },
+      {
+        "name": "rating",
+        "datatype": "number",
+        "required": true,
+        "constraints": {
+          "minimum": 0,
+          "maximum": 5
+        }
+      },
+      {
+        "name": "status",
+        "datatype": "string",
+        "required": true,
+        "constraints": {
+          "enum": ["active", "discontinued", "pending"]
+        }
+      }
+    ],
+    "primaryKey": "product_id"
+  },
+  "dialect": {
+    "delimiter": ",",
+    "header": true,
+    "encoding": "utf-8"
+  }
+}

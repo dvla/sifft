@@ -1,0 +1,84 @@
+{
+  "@context": "http://www.w3.org/ns/csvw",
+  "url": "csvw_advanced.csv",
+  "tableSchema": {
+    "columns": [
+      {
+        "name": "product_id",
+        "titles": "product_id",
+        "datatype": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "titles": "name",
+        "datatype": "string",
+        "required": false,
+        "null": ""
+      },
+      {
+        "name": "category",
+        "titles": "category",
+        "datatype": "string",
+        "required": true
+      },
+      {
+        "name": "price",
+        "titles": "price",
+        "datatype": "number",
+        "required": false,
+        "null": "N/A"
+      },
+      {
+        "name": "quantity",
+        "titles": "quantity",
+        "datatype": "integer",
+        "required": true
+      },
+      {
+        "name": "in_stock",
+        "titles": "in_stock",
+        "datatype": "boolean",
+        "required": true
+      },
+      {
+        "name": "created_date",
+        "titles": "created_date",
+        "datatype": "date",
+        "required": true,
+        "format": "yyyy-MM-dd"
+      },
+      {
+        "name": "last_updated",
+        "titles": "last_updated",
+        "datatype": "date",
+        "required": false,
+        "format": "yyyy-MM-dd",
+        "null": ""
+      },
+      {
+        "name": "supplier_code",
+        "titles": "supplier_code",
+        "datatype": "string",
+        "required": true
+      },
+      {
+        "name": "weight_kg",
+        "titles": "weight_kg",
+        "datatype": "number",
+        "required": true
+      },
+      {
+        "name": "rating",
+        "titles": "rating",
+        "datatype": "number",
+        "required": true
+      }
+    ]
+  },
+  "dialect": {
+    "delimiter": ",",
+    "header": true,
+    "encoding": "utf-8"
+  }
+}

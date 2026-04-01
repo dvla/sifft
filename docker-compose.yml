@@ -1,0 +1,17 @@
+
+services:
+  spark-test:
+    build: .
+    container_name: file-processing-spark
+    volumes:
+      - ./report.html:/app/report.html
+      - ./file_processing:/app/file_processing
+      - ./dataframe_validation:/app/dataframe_validation
+      - ./table_writing:/app/table_writing
+      - ./file_management:/app/file_management
+      - ./tests:/app/tests
+      - ./samples:/app/samples
+    environment:
+      - PYSPARK_PYTHON=python3
+      - PYSPARK_DRIVER_PYTHON=python3
+    command: tail -f /dev/null  # Keep container running

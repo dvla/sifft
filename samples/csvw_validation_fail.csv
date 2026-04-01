@@ -1,0 +1,11 @@
+product_id,name,category,price,quantity,rating,status
+P001,Widget A,electronics,29.99,150,4.5,active
+P002,Widget B,clothing,49.50,80,3.8,active
+P003,Gadget C,electronics,15.00,200,4.2,active
+P004,Gizmo D,home,1500.00,45,4.8,active
+P005,Thingamajig E,clothing,12.75,15000,3.5,active
+P006,Doohickey F,home,72.00,5,-1.0,discontinued
+P007,Contraption G,electronics,223.00,25,4.7,active
+P008,Apparatus H,home,119.50,60,3.9,invalid
+P009,Sprocket I,clothing,34.25,90,4.0,active
+P001,Flange J,electronics,8.99,500,3.2,active

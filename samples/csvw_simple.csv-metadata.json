@@ -1,0 +1,37 @@
+{
+  "@context": "http://www.w3.org/ns/csvw",
+  "url": "csvw_simple.csv",
+  "tableSchema": {
+    "columns": [
+      {
+        "name": "product_id",
+        "titles": "product_id",
+        "datatype": "string",
+        "required": true
+      },
+      {
+        "name": "name",
+        "titles": "name",
+        "datatype": "string",
+        "required": true
+      },
+      {
+        "name": "category",
+        "titles": "category",
+        "datatype": "string",
+        "required": true
+      },
+      {
+        "name": "price",
+        "titles": "price",
+        "datatype": "number",
+        "required": true
+      }
+    ]
+  },
+  "dialect": {
+    "delimiter": ",",
+    "header": true,
+    "encoding": "utf-8"
+  }
+}
