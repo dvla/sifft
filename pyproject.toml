@@ -17,7 +17,6 @@ classifiers = [
     "Intended Audience :: Developers"
 ]
 dependencies = [
-    "pyspark==3.5.7",
     "pyld>=2.0.4",
     "xlrd>=2.0.2",
     "pandas>=2.0.0",
@@ -28,6 +27,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+pyspark3 = [
+    "pyspark>=3.4,<4",
+    "delta-spark>=3.2,<4",
+]
+pyspark4 = [
+    "pyspark>=4,<5",
+    "delta-spark>=4,<5",
+]
 dev = [
     "pytest>=9.0.2",
     "pytest-bdd>=8.1.0",
@@ -36,7 +43,12 @@ dev = [
     "ruff>=0.15.1",
     "pre-commit>=4.0.0",
     "mypy>=1.0.0",
-    "delta-spark>=3.2.1",
+]
+dev-spark3 = [
+    "sifft[dev,pyspark3]",
+]
+dev-spark4 = [
+    "sifft[dev,pyspark4]",
 ]
 
 [build-system]

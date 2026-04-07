@@ -4,6 +4,7 @@ from pyspark.sql import DataFrame
 from pyspark.sql.functions import col
 from pyspark.sql.types import StructType
 
+from .compat import safe_cast
 from .helpers import is_potential_lossy_cast
 from .models import ValidationLog
 
@@ -144,7 +145,7 @@ def apply_schema(
                 spark_sum(
                     when(
                         col(col_name).isNotNull()
-                        & col(col_name).cast(expected_type).isNull(),
+                        & safe_cast(col(col_name), expected_type).isNull(),
                         1,
                     ).otherwise(0)
                 ).alias(col_name)
@@ -162,6 +163,6 @@ def apply_schema(
                 )
 
     for col_name, expected_type, _ in columns_to_cast:
-        df = df.withColumn(col_name, col(col_name).cast(expected_type))
+        df = df.withColumn(col_name, safe_cast(col(col_name), expected_type))
 
     return df

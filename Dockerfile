@@ -1,11 +1,14 @@
-FROM apache/spark-py:v3.4.0
+ARG PYTHON_VERSION=3.12
+FROM python:${PYTHON_VERSION}-slim
 
-USER root
+ARG PYSPARK_VERSION=4.1
+ARG DELTA_VERSION=4.1
+
+RUN apt-get update && apt-get install -y --no-install-recommends default-jdk && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-RUN pip3 install pyspark==3.5.7 delta-spark pytest pytest-bdd pytest-html pytest-cov openpyxl pyld pandas xlrd fsspec s3fs
-
+COPY pyproject.toml .
 COPY file_processing ./file_processing
 COPY dataframe_validation ./dataframe_validation
 COPY table_writing ./table_writing
@@ -13,6 +16,10 @@ COPY file_management ./file_management
 COPY samples ./samples
 COPY tests ./tests
 
+RUN pip install --no-cache-dir -e ".[dev]" \
+    "pyspark>=${PYSPARK_VERSION},<$(echo ${PYSPARK_VERSION} | awk -F. '{print $1"."$2+1}')" \
+    "delta-spark>=${DELTA_VERSION},<$(echo ${DELTA_VERSION} | awk -F. '{print $1"."$2+1}')"
+
 ENV PYTHONPATH=/app
 
-CMD ["python3", "-m", "pytest", "tests/", "-v"]
+CMD ["python", "-m", "pytest", "tests/", "-v"]

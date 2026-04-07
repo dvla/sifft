@@ -1,7 +1,11 @@
-
 services:
   spark-test:
-    build: .
+    build:
+      context: .
+      args:
+        PYTHON_VERSION: ${PYTHON_VERSION:-3.12}
+        PYSPARK_VERSION: ${PYSPARK_VERSION:-4.1}
+        DELTA_VERSION: ${DELTA_VERSION:-4.1}
     container_name: file-processing-spark
     volumes:
       - ./report.html:/app/report.html
