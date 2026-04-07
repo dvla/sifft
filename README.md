@@ -113,7 +113,7 @@ def validate_and_write(batch_df, batch_id):
 ## Requirements
 
 - Python 3.10+
-- PySpark 3.4.x, 3.5.x, 4.0.x, or 4.1.x (peer dependency — not installed automatically)
+- PySpark 3.5.x, 4.0.x, or 4.1.x (peer dependency — not installed automatically)
 - Optional: pandas, openpyxl (for Excel support)
 
 ## Installation
@@ -123,7 +123,7 @@ def validate_and_write(batch_df, batch_id):
 pip install sifft
 
 # Or install with a specific PySpark version
-pip install sifft[pyspark3]   # PySpark 3.4–3.5 + Delta Lake 3.x
+pip install sifft[pyspark3]   # PySpark 3.5 + Delta Lake 3.x
 pip install sifft[pyspark4]   # PySpark 4.x + Delta Lake 4.x
 ```
 
