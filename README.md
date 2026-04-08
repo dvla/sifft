@@ -113,13 +113,18 @@ def validate_and_write(batch_df, batch_id):
 ## Requirements
 
 - Python 3.10+
-- PySpark 3.5.7
+- PySpark 3.5.x, 4.0.x, or 4.1.x (peer dependency — not installed automatically)
 - Optional: pandas, openpyxl (for Excel support)
 
 ## Installation
 
 ```bash
+# Install SIFFT (without PySpark — use the version provided by your Databricks runtime)
 pip install sifft
+
+# Or install with a specific PySpark version
+pip install sifft[pyspark3]   # PySpark 3.5 + Delta Lake 3.x
+pip install sifft[pyspark4]   # PySpark 4.x + Delta Lake 4.x
 ```
 
 ## Quick Start
@@ -852,6 +857,12 @@ The project uses Docker to provide a consistent Spark environment for testing. T
 # Run all tests with Docker (recommended)
 just test
 
+# Run tests against all supported PySpark versions
+just test-all
+
+# Run tests with a specific PySpark version
+PYSPARK_VERSION=3.5 DELTA_VERSION=3.3 PYTHON_VERSION=3.12 just test
+
 # Run tests locally (requires local Spark installation)
 just test-local
 
@@ -861,7 +872,7 @@ just test-file tests/test_file_processing.py
 
 **Docker setup:**
 - `docker-compose.yml` defines the Spark test environment
-- `Dockerfile` contains Apache Spark 3.4.0 with PySpark 3.5.7 and test dependencies
+- `Dockerfile` accepts `PYTHON_VERSION`, `PYSPARK_VERSION`, and `DELTA_VERSION` build args
 - Tests run in an isolated container to avoid environment conflicts
 
 ### Available Commands

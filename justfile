@@ -1,5 +1,10 @@
 # Spark File Ingestion Toolkit - Task Runner
 
+# Default PySpark/Python versions for Docker testing
+PYSPARK_VERSION := env("PYSPARK_VERSION", "4.1")
+DELTA_VERSION := env("DELTA_VERSION", "4.1")
+PYTHON_VERSION := env("PYTHON_VERSION", "3.12")
+
 # Show all available commands
 default:
     @just --list
@@ -11,11 +16,17 @@ format:
 
 # Run all tests with coverage report (excludes demos)
 test:
-    docker compose build
-    docker compose up -d spark-test
+    PYSPARK_VERSION={{PYSPARK_VERSION}} DELTA_VERSION={{DELTA_VERSION}} PYTHON_VERSION={{PYTHON_VERSION}} docker compose build
+    PYSPARK_VERSION={{PYSPARK_VERSION}} DELTA_VERSION={{DELTA_VERSION}} PYTHON_VERSION={{PYTHON_VERSION}} docker compose up -d spark-test
     sleep 3
     docker compose exec spark-test pytest tests/ --ignore=tests/demo --cov
     docker compose down
+
+# Run tests for all supported PySpark versions
+test-all:
+    PYSPARK_VERSION=3.5 DELTA_VERSION=3.3 PYTHON_VERSION=3.12 just test
+    PYSPARK_VERSION=4.0 DELTA_VERSION=4.0 PYTHON_VERSION=3.13 just test
+    PYSPARK_VERSION=4.1 DELTA_VERSION=4.1 PYTHON_VERSION=3.13 just test
 
 # Run tests without Docker (requires local Spark)
 test-local:
@@ -49,7 +60,7 @@ fix-line-endings:
 
 # Start Docker Spark container
 up:
-    docker compose up -d spark-test
+    PYSPARK_VERSION={{PYSPARK_VERSION}} DELTA_VERSION={{DELTA_VERSION}} PYTHON_VERSION={{PYTHON_VERSION}} docker compose up -d spark-test
     @echo "Spark container started"
 
 # Stop Docker Spark container

@@ -10,14 +10,62 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        python-version: ["3.10", "3.11", "3.12"]
+        include:
+          # PySpark 3.5 — supports Python 3.10-3.12
+          - python-version: "3.10"
+            pyspark-version: "3.5"
+            pyspark-pin: "pyspark>=3.5,<3.6"
+            delta-pin: "delta-spark>=3.2,<4"
+          - python-version: "3.11"
+            pyspark-version: "3.5"
+            pyspark-pin: "pyspark>=3.5,<3.6"
+            delta-pin: "delta-spark>=3.2,<4"
+          - python-version: "3.12"
+            pyspark-version: "3.5"
+            pyspark-pin: "pyspark>=3.5,<3.6"
+            delta-pin: "delta-spark>=3.2,<4"
+          # PySpark 4.0 — supports Python 3.10-3.13
+          - python-version: "3.10"
+            pyspark-version: "4.0"
+            pyspark-pin: "pyspark>=4.0,<4.1"
+            delta-pin: "delta-spark>=4.0,<4.1"
+          - python-version: "3.12"
+            pyspark-version: "4.0"
+            pyspark-pin: "pyspark>=4.0,<4.1"
+            delta-pin: "delta-spark>=4.0,<4.1"
+          - python-version: "3.13"
+            pyspark-version: "4.0"
+            pyspark-pin: "pyspark>=4.0,<4.1"
+            delta-pin: "delta-spark>=4.0,<4.1"
+          # PySpark 4.1 — supports Python 3.10-3.14
+          - python-version: "3.10"
+            pyspark-version: "4.1"
+            pyspark-pin: "pyspark>=4.1,<4.2"
+            delta-pin: "delta-spark>=4.1,<4.2"
+          - python-version: "3.12"
+            pyspark-version: "4.1"
+            pyspark-pin: "pyspark>=4.1,<4.2"
+            delta-pin: "delta-spark>=4.1,<4.2"
+          - python-version: "3.13"
+            pyspark-version: "4.1"
+            pyspark-pin: "pyspark>=4.1,<4.2"
+            delta-pin: "delta-spark>=4.1,<4.2"
+          - python-version: "3.14"
+            pyspark-version: "4.1"
+            pyspark-pin: "pyspark>=4.1,<4.2"
+            delta-pin: "delta-spark>=4.1,<4.2"
+    name: "Python ${{ matrix.python-version }} / PySpark ${{ matrix.pyspark-version }}"
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e ".[dev]"
+          allow-prereleases: true
+      - name: Install dependencies
+        run: |
+          pip install -e ".[dev]" "${{ matrix.pyspark-pin }}" "${{ matrix.delta-pin }}"
       - run: pytest tests/ --ignore=tests/demo --cov -v
 
   build:
