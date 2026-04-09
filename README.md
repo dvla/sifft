@@ -127,6 +127,28 @@ pip install sifft[pyspark3]   # PySpark 3.5 + Delta Lake 3.x
 pip install sifft[pyspark4]   # PySpark 4.x + Delta Lake 4.x
 ```
 
+### Installing from TestPyPI (Pre-release)
+
+To test the latest pre-release version from [TestPyPI](https://test.pypi.org/project/sifft/):
+
+**Using pip:**
+```bash
+pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ sifft
+```
+
+**Using uv:**
+```bash
+uv add --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ sifft
+```
+
+**Using poetry:**
+```bash
+# Add the TestPyPI source
+poetry source add --priority=supplemental testpypi https://test.pypi.org/simple/
+# Add the package from the source
+poetry add --source testpypi sifft
+```
+
 ## Quick Start
 
 ### 1. Read a File
