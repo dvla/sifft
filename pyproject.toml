@@ -1,6 +1,6 @@
 [project]
 name = "sifft"
-version = "0.8.0"
+version = "0.8.1"
 description = "Spark Ingestion Framework for Tables (SIFFT) - a Python library providing a consistent interface for ingesting files into Apache Spark environments."
 authors = [
     {name = "Iwan Dyke"},
