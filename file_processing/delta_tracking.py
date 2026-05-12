@@ -166,7 +166,8 @@ def mark_file_processed_delta(
             is_active=True,
             cleared_at=None,
         )
-        spark.createDataFrame([row]).write.insertInto(tracking_location)
+        schema = spark.table(tracking_location).schema
+        spark.createDataFrame([row], schema=schema).write.insertInto(tracking_location)
 
         return TrackingResult(
             success=True,

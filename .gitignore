@@ -63,3 +63,8 @@ uv.lock
 
 # Code review
 code_review.md
+
+# Spark local artifacts
+spark-warehouse/
+metastore_db/
+derby.log

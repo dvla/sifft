@@ -1,9 +1,11 @@
 # Docker
 .dockerignore
-__pycache__/
-*.pyc
+**/__pycache__
+**/*.pyc
 .pytest_cache/
 .git/
 *.egg-info/
 dist/
 build/
+spark-warehouse/
+.venv/

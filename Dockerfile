@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends default-jdk && 
 
 WORKDIR /app
 
-COPY pyproject.toml .
+COPY pyproject.toml README.md ./
 COPY file_processing ./file_processing
 COPY dataframe_validation ./dataframe_validation
 COPY table_writing ./table_writing

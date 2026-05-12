@@ -30,7 +30,7 @@ test-all:
 
 # Run tests without Docker (requires local Spark)
 test-local:
-    pytest tests/ --cov
+    uv run pytest tests/ --cov
 
 # Run specific test file
 test-file file:

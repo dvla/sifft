@@ -433,3 +433,44 @@ def test_tracking_requires_location():
 
     with pytest.raises(ValueError, match="tracking_location is required"):
         process_file("samples/csvw_simple.csv", spark, tracking="marker_file")
+
+
+def test_delta_tracking_writes_record_with_null_cleared_at(spark):
+    """Regression: Spark must not fail inferring type for cleared_at=None."""
+    from datetime import datetime, timezone
+
+    from pyspark.sql import Row
+    from pyspark.sql.types import (
+        BooleanType,
+        IntegerType,
+        StringType,
+        StructField,
+        StructType,
+        TimestampType,
+    )
+
+    schema = StructType([
+        StructField("checksum", StringType()),
+        StructField("source_file", StringType()),
+        StructField("processed_at", TimestampType()),
+        StructField("rows_processed", IntegerType()),
+        StructField("is_active", BooleanType()),
+        StructField("cleared_at", TimestampType()),
+    ])
+
+    row = Row(
+        checksum="abc123",
+        source_file="test.csv",
+        processed_at=datetime.now(timezone.utc),
+        rows_processed=5,
+        is_active=True,
+        cleared_at=None,
+    )
+
+    # This is the exact pattern from the fix — fails without schema
+    df = spark.createDataFrame([row], schema=schema)
+    result = df.collect()[0]
+
+    assert result["cleared_at"] is None
+    assert result["is_active"] is True
+    assert result["rows_processed"] == 5
