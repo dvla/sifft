@@ -279,14 +279,25 @@ class TestErrorHandling:
         assert not result.success
         assert "not found" in result.message.lower()
 
-    def test_unsupported_extension(self, spark, temp_dir):
+    def test_unrecognised_extension_falls_back_to_delimited(self, spark, temp_dir):
         pdf_file = temp_dir / "data.pdf"
-        pdf_file.write_text("fake pdf content")
+        pdf_file.write_text("name,age,city\nAlice,25,London\nBob,30,Paris\n")
 
         result = process_file(str(pdf_file), spark)
 
-        assert not result.success
-        assert "unsupported" in result.message.lower()
+        assert result.success
+        assert result.rows_processed == 2
+
+    def test_numeric_extension_falls_back_to_delimited(self, spark, temp_dir):
+        numeric_file = temp_dir / "report.202605090555"
+        numeric_file.write_text("1,2,3\n4,5,6\n")
+
+        result = process_file(
+            str(numeric_file), spark, read_options={"delimiter": ",", "header": "false"}
+        )
+
+        assert result.success
+        assert result.rows_processed == 2
 
     def test_wrong_delimiter(self, spark, temp_dir):
         csv_file = temp_dir / "data.csv"

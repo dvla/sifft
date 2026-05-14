@@ -98,20 +98,15 @@ def _select_handler(
             None,
         )
 
-    exc = FileProcessingException(
-        f"Unsupported file extension: {ext}",
-        "unsupported_format",
-        f"Supported extensions: {', '.join(TEXT_EXTENSIONS | EXCEL_EXTENSIONS)}",
+    logger.warning(
+        "Unrecognised extension '%s' for %s, attempting delimited file parsing",
+        ext,
+        file_path,
     )
     return (
+        _process_delimited_file,
+        NO_EXTENSION_DEFAULTS.copy(),
         None,
-        {},
-        FileProcessingResult(
-            success=False,
-            file=file_path,
-            message=exc.message,
-            error=exc.to_dict(),
-        ),
     )
 
 
