@@ -159,3 +159,37 @@ class TestHandlerRegistry:
 
         # Cleanup
         unregister_handler(".custom")
+
+    def test_custom_handler_receives_metadata_path(self, spark, tmp_path):
+        from file_processing import (
+            FileProcessingResult,
+            process_file,
+            register_handler,
+            unregister_handler,
+        )
+
+        test_file = tmp_path / "data.custom"
+        test_file.write_text("a,b,c\n1,2,3\n")
+
+        received_options = {}
+
+        def custom_handler(file_path, spark, options):
+            received_options.update(options)
+            df = spark.createDataFrame([("1",)], ["col1"])
+            return FileProcessingResult(
+                success=True,
+                file=file_path,
+                dataframe=df,
+                message="ok",
+                rows_processed=1,
+            )
+
+        register_handler(".custom", custom_handler)
+
+        process_file(
+            str(test_file), spark, metadata_path="/path/to/metadata.json"
+        )
+
+        assert received_options.get("csvw_metadata_path") == "/path/to/metadata.json"
+
+        unregister_handler(".custom")

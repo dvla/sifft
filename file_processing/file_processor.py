@@ -184,12 +184,12 @@ def process_file(
     if storage_options:
         options["storage_options"] = storage_options
 
+    if metadata_path:
+        options["csvw_metadata_path"] = metadata_path
+
     logger.info("Processing file: %s with options: %s", file_path, options)
 
-    if handler == _process_delimited_file:
-        result = handler(file_path, spark, options, metadata_path)
-    else:
-        result = handler(file_path, spark, options)
+    result = handler(file_path, spark, options)
 
     if result.success:
         logger.info("Successfully processed %s: %s", file_path, result.message)
