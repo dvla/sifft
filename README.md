@@ -1,6 +1,12 @@
 # SIFFT
 
-**Spark Ingestion Framework For Tables** — format-agnostic file reading, data validation, and table writing for PySpark.
+File ingestion pipelines are repetitive and fragile. **SIFFT** (Spark Ingestion Framework For Tables) is a Python library that aims to:
+
+- Make file reading format-agnostic with automatic delimiter and header detection
+- Validate data quality with CSVW metadata and constraint checking before it enters your tables
+- Provide consistent error handling across CSV, Excel, TSV, and pipe-delimited files
+- Support schema evolution and merge/upsert operations for Delta tables
+- Reduce boilerplate code for common Spark ingestion patterns
 
 ## Install
 
