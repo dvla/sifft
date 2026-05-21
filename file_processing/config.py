@@ -9,7 +9,7 @@ EXTENSION_DEFAULTS = {
     ".eot": {"delimiter": ","},
 }
 
-NO_EXTENSION_DEFAULTS = {"delimiter": ",", "header": "auto"}
+NO_EXTENSION_DEFAULTS = {"delimiter": "auto", "header": "auto"}
 
 EXCEL_EXTENSIONS = {".xlsx", ".xls"}
 TEXT_EXTENSIONS = {".csv", ".txt", ".out", ".dat", ".tsv", ".eot"}

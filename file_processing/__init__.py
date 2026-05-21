@@ -11,6 +11,7 @@ from .config import (
 )
 from .exceptions import FileProcessingException
 from .file_processor import process_directory, process_file, process_files_batch
+from .helpers import detect_delimiter
 from .models import FileProcessingResult
 from .registry import (
     list_registered_extensions,
@@ -30,6 +31,7 @@ __all__ = [
     "process_directory",
     "FileProcessingResult",
     "FileProcessingException",
+    "detect_delimiter",
     "EXCEL_EXTENSIONS",
     "TEXT_EXTENSIONS",
     "EXTENSION_DEFAULTS",

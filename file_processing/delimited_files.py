@@ -14,7 +14,7 @@ from .csvw_dialect import extract_csvw_dialect, extract_csvw_null_values
 from .csvw_metadata import load_csvw_metadata
 from .csvw_schema import csvw_to_spark_schema
 from .exceptions import FileProcessingException
-from .helpers import detect_header
+from .helpers import detect_delimiter, detect_header
 from .models import FileProcessingResult
 
 logger = logging.getLogger(__name__)
@@ -153,6 +153,11 @@ def _process_with_inference(
     try:
         delimiter = options.get("delimiter", ",")
 
+        if delimiter == "auto":
+            delimiter = detect_delimiter(
+                file_path, storage_options=options.get("storage_options")
+            )
+
         if len(delimiter) > 1:
             exc = FileProcessingException(
                 f"Multi-character delimiter '{delimiter}' not supported. "
@@ -171,7 +176,9 @@ def _process_with_inference(
             header = "true"
             logger.debug("No header specified, defaulting to 'true' for %s", file_path)
         elif options["header"] == "auto":
-            has_header = detect_header(file_path, delimiter)
+            has_header = detect_header(
+                file_path, delimiter, storage_options=options.get("storage_options")
+            )
             header = "true" if has_header else "false"
             logger.info("Auto-detected header=%s for %s", header, file_path)
         else:
