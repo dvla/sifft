@@ -194,19 +194,44 @@ def process_file(
     if result.success:
         logger.info("Successfully processed %s: %s", file_path, result.message)
         if tracking:
-            record_processed(
-                file_path,
-                tracking,
-                tracking_location,
-                spark,
-                result.rows_processed,
-                storage_options=storage_options,
-            )
+            result.tracking_context = {
+                "file_path": file_path,
+                "tracking": tracking,
+                "tracking_location": tracking_location,
+                "rows_processed": result.rows_processed,
+                "storage_options": storage_options,
+            }
     else:
         logger.error("Failed to process %s: %s", file_path, result.message)
         return _handle_error(result, raise_on_error)
 
     return result
+
+
+def confirm_processed(
+    result: FileProcessingResult,
+    spark: SparkSession,
+) -> None:
+    """Confirm successful processing and write the tracking record.
+
+    Call this after your full pipeline (validation, table write, etc.) succeeds.
+    If tracking was not enabled or the result was not successful, this is a no-op.
+
+    Args:
+        result: The FileProcessingResult returned by process_file
+        spark: Active SparkSession instance
+    """
+    ctx = result.tracking_context
+    if ctx is None:
+        return
+    record_processed(
+        ctx["file_path"],
+        ctx["tracking"],
+        ctx["tracking_location"],
+        spark,
+        ctx["rows_processed"],
+        storage_options=ctx.get("storage_options"),
+    )
 
 
 def process_files_batch(

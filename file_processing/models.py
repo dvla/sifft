@@ -19,6 +19,8 @@ class FileProcessingResult:
         rows_processed: Total number of rows read from file
         rows_corrupt: Number of rows that couldn't be parsed correctly
         metadata: CSVW metadata dict if used (None for inference mode)
+        checksum: File checksum for deduplication
+        tracking_context: Internal context for deferred tracking confirmation
     """
 
     success: bool
@@ -30,6 +32,7 @@ class FileProcessingResult:
     rows_corrupt: int = 0
     metadata: dict[str, Any] | None = None
     checksum: str | None = None
+    tracking_context: dict[str, Any] | None = None
 
     def __repr__(self) -> str:
         """Human-readable summary of processing result."""

@@ -296,6 +296,13 @@ def process_single_file(spark_session):
     test_results = list(process_files(test_file_path, spark_session))
 
 
+@when(parsers.parse('I process the file with delimiter "{delimiter}"'))
+def process_single_file_with_delimiter(spark_session, delimiter):
+    global test_results, test_file_path
+    result = process_file(str(test_file_path), spark_session, {"delimiter": delimiter})
+    test_results = [result]
+
+
 @when(
     parsers.parse(
         'I process files with pattern "{pattern}" and max_files {max_files:d}'

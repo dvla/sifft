@@ -42,7 +42,7 @@ Feature: File Processing API
 
   Scenario: Process an OUT file with comma delimiter
     Given I have a comma-delimited OUT file at "test_data/sample.out"
-    When I process the file
+    When I process the file with delimiter ","
     Then I should get a successful result
     And the result should contain a DataFrame
 

@@ -240,6 +240,33 @@ def _validate_and_return(
             error=exc.to_dict(),
         )
 
+    data_columns = [c for c in df.columns if c != "_corrupt_record"]
+    if metadata_source == "inference" and len(data_columns) == 1:
+        # Check if the file contains common delimiters, suggesting the configured one is wrong
+        delimiter = (options or {}).get("delimiter", ",")
+        try:
+            with open(file_path, encoding="utf-8", errors="ignore") as f:
+                sample = f.read(4096)
+            # File contains the configured delimiter but Spark still got 1 column
+            # OR file contains other common delimiters (suggesting wrong delimiter configured)
+            other_delimiters = {",", "|", "\t", ";"} - {delimiter}
+            file_has_configured = delimiter in sample
+            file_has_other = any(d in sample for d in other_delimiters)
+            if file_has_configured or file_has_other:
+                exc = FileProcessingException(
+                    "Only 1 column detected - delimiter likely incorrect",
+                    "delimiter_mismatch",
+                    "Check delimiter setting matches the file format",
+                )
+                return FileProcessingResult(
+                    success=False,
+                    file=file_path,
+                    message=exc.message,
+                    error=exc.to_dict(),
+                )
+        except OSError:
+            pass
+
     total_rows = df.count()
 
     if total_rows == 0:
