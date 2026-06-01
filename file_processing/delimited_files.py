@@ -3,6 +3,7 @@ Processing logic for delimited text files with CSVW metadata support.
 """
 
 import logging
+from pathlib import Path
 from typing import Any
 
 from pyspark.sql import DataFrame, SparkSession
@@ -245,8 +246,7 @@ def _validate_and_return(
         # Check if the file contains common delimiters, suggesting the configured one is wrong
         delimiter = (options or {}).get("delimiter", ",")
         try:
-            with open(file_path, encoding="utf-8", errors="ignore") as f:
-                sample = f.read(4096)
+            sample = Path(file_path).read_text(encoding="utf-8", errors="ignore")[:4096]
             # File contains the configured delimiter but Spark still got 1 column
             # OR file contains other common delimiters (suggesting wrong delimiter configured)
             other_delimiters = {",", "|", "\t", ";"} - {delimiter}

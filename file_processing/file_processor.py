@@ -199,7 +199,6 @@ def process_file(
                 "tracking": tracking,
                 "tracking_location": tracking_location,
                 "rows_processed": result.rows_processed,
-                "storage_options": storage_options,
             }
     else:
         logger.error("Failed to process %s: %s", file_path, result.message)
@@ -211,6 +210,7 @@ def process_file(
 def confirm_processed(
     result: FileProcessingResult,
     spark: SparkSession,
+    storage_options: dict[str, str] | None = None,
 ) -> None:
     """Confirm successful processing and write the tracking record.
 
@@ -220,6 +220,7 @@ def confirm_processed(
     Args:
         result: The FileProcessingResult returned by process_file
         spark: Active SparkSession instance
+        storage_options: Cloud storage credentials (e.g. for S3/ADLS)
     """
     ctx = result.tracking_context
     if ctx is None:
@@ -230,7 +231,7 @@ def confirm_processed(
         ctx["tracking_location"],
         spark,
         ctx["rows_processed"],
-        storage_options=ctx.get("storage_options"),
+        storage_options=storage_options,
     )
 
 

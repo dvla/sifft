@@ -498,6 +498,28 @@ class TestSampleFilesDelimiterDetection:
                 f"Column name '{col}' contains delimiter '{delimiter}' - parsing failed"
             )
 
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "data_pipe.out",
+            "data_pipe.dat",
+            "data_comma.txt",
+            "data_tab.tsv",
+        ],
+    )
+    def test_extension_defaults_work_without_explicit_delimiter(
+        self, spark, samples_dir, filename
+    ):
+        """Extension defaults should succeed when file content matches the assumption."""
+        f = samples_dir / filename
+        if not f.exists():
+            pytest.skip(f"{filename} not found")
+
+        result = process_file(str(f), spark)
+        assert result.success, f"{filename} failed: {result.message}"
+        assert result.rows_processed > 0
+        assert len(result.dataframe.columns) == 4
+
 
 class TestCSVWProcessing:
     """Tests for CSVW metadata-driven file processing"""
