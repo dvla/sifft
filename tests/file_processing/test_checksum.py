@@ -343,7 +343,7 @@ def test_tracking_skips_duplicate(spark):
     import shutil
     import tempfile
 
-    from file_processing import process_file
+    from file_processing import confirm_processed, process_file
 
     with tempfile.TemporaryDirectory() as tmpdir:
         marker_dir = os.path.join(tmpdir, "markers")
@@ -359,6 +359,7 @@ def test_tracking_skips_duplicate(spark):
         )
         assert result1.success
         assert result1.rows_processed > 0
+        confirm_processed(result1, spark)
 
         # Second run - should skip
         result2 = process_file(
@@ -369,12 +370,42 @@ def test_tracking_skips_duplicate(spark):
         assert "already processed" in result2.message.lower()
 
 
+def test_tracking_not_written_without_confirm(spark):
+    """Issue #12: tracking record not written until caller confirms success."""
+    import shutil
+    import tempfile
+
+    from file_processing import process_file
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        marker_dir = os.path.join(tmpdir, "markers")
+
+        src = "samples/csvw_simple.csv"
+        dst = os.path.join(tmpdir, "test.csv")
+        shutil.copy(src, dst)
+        shutil.copy(f"{src}-metadata.json", f"{dst}-metadata.json")
+
+        # Process but do NOT call confirm_processed (simulating downstream failure)
+        result1 = process_file(
+            dst, spark, tracking="marker_file", tracking_location=marker_dir
+        )
+        assert result1.success
+        assert result1.tracking_context is not None
+
+        # Second run - should NOT skip because tracking was never confirmed
+        result2 = process_file(
+            dst, spark, tracking="marker_file", tracking_location=marker_dir
+        )
+        assert result2.success
+        assert result2.rows_processed > 0  # Reprocessed, not skipped
+
+
 def test_tracking_logs_same_content_different_filename(spark):
     """Same content with different filename should both be processed."""
     import shutil
     import tempfile
 
-    from file_processing import process_file
+    from file_processing import confirm_processed, process_file
 
     with tempfile.TemporaryDirectory() as tmpdir:
         marker_dir = os.path.join(tmpdir, "markers")
@@ -394,10 +425,44 @@ def test_tracking_logs_same_content_different_filename(spark):
         )
         assert result1.success
         assert result1.rows_processed > 0
+        confirm_processed(result1, spark)
 
         # Second file (same content, different name) should also process
         result2 = process_file(
             file2, spark, tracking="marker_file", tracking_location=marker_dir
+        )
+        assert result2.success
+        assert result2.rows_processed > 0
+
+
+def test_delimiter_mismatch_does_not_write_tracking(spark):
+    """Issue #12: wrong delimiter fails without writing tracking record."""
+    import tempfile
+
+    from file_processing import process_file
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        marker_dir = os.path.join(tmpdir, "markers")
+
+        # Create a pipe-delimited file with .csv extension (defaults to comma)
+        csv_file = os.path.join(tmpdir, "data.csv")
+        with open(csv_file, "w") as f:
+            f.write("name|age|city\nAlice|25|London\nBob|30|Paris\n")
+
+        # First attempt - should fail due to delimiter mismatch
+        result1 = process_file(
+            csv_file, spark, tracking="marker_file", tracking_location=marker_dir
+        )
+        assert not result1.success
+        assert result1.tracking_context is None
+
+        # Retry with correct delimiter - should succeed (not blocked by tracking)
+        result2 = process_file(
+            csv_file,
+            spark,
+            {"delimiter": "|"},
+            tracking="marker_file",
+            tracking_location=marker_dir,
         )
         assert result2.success
         assert result2.rows_processed > 0

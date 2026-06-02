@@ -114,7 +114,7 @@ class TestTXTProcessing:
         if not txt_file.exists():
             pytest.skip(f"Sample file not found: {txt_file}")
 
-        result = process_file(str(txt_file), spark)
+        result = process_file(str(txt_file), spark, {"delimiter": "|"})
 
         assert result.success
         assert result.rows_processed > 0
@@ -126,7 +126,7 @@ class TestTXTProcessing:
         if not txt_file.exists():
             pytest.skip(f"Sample file not found: {txt_file}")
 
-        result = process_file(str(txt_file), spark)
+        result = process_file(str(txt_file), spark, {"delimiter": "\t"})
 
         assert result.success
         assert result.rows_processed > 0
@@ -140,7 +140,7 @@ class TestOUTProcessing:
         if not out_file.exists():
             pytest.skip(f"Sample file not found: {out_file}")
 
-        result = process_file(str(out_file), spark)
+        result = process_file(str(out_file), spark, {"delimiter": ","})
 
         assert result.success
         assert result.rows_processed > 0
@@ -167,7 +167,7 @@ class TestOUTProcessing:
         if not out_file.exists():
             pytest.skip(f"Sample file not found: {out_file}")
 
-        result = process_file(str(out_file), spark)
+        result = process_file(str(out_file), spark, {"delimiter": "\t"})
 
         assert result.success
         assert result.rows_processed > 0
@@ -181,7 +181,7 @@ class TestDATProcessing:
         if not dat_file.exists():
             pytest.skip(f"Sample file not found: {dat_file}")
 
-        result = process_file(str(dat_file), spark)
+        result = process_file(str(dat_file), spark, {"delimiter": ","})
 
         assert result.success
         assert result.rows_processed > 0
@@ -205,7 +205,7 @@ class TestDATProcessing:
         if not dat_file.exists():
             pytest.skip(f"Sample file not found: {dat_file}")
 
-        result = process_file(str(dat_file), spark)
+        result = process_file(str(dat_file), spark, {"delimiter": "\t"})
 
         assert result.success
         assert result.rows_processed > 0
@@ -305,7 +305,8 @@ class TestErrorHandling:
 
         result = process_file(str(csv_file), spark)
 
-        assert result.success or "wrong delimiter" in result.message.lower()
+        assert not result.success
+        assert result.error["error_type"] == "delimiter_mismatch"
 
     def test_spark_session_none(self, temp_dir):
         csv_file = temp_dir / "data.csv"
@@ -343,8 +344,15 @@ class TestBatchProcessing:
         assert not results[1].success
 
     def test_batch_with_sample_files(self, spark, samples_dir):
-        """Test batch processing with all sample files"""
-        sample_files = list(samples_dir.glob("data_*.*"))
+        """Test batch processing with sample files matching their extension defaults"""
+        # Only include files whose content matches the extension's default delimiter
+        matching_files = [
+            samples_dir / "data_comma.txt",
+            samples_dir / "data_pipe.out",
+            samples_dir / "data_pipe.dat",
+            samples_dir / "data_tab.tsv",
+        ]
+        sample_files = [f for f in matching_files if f.exists()]
 
         if not sample_files:
             pytest.skip("No sample files found in samples directory")
@@ -352,7 +360,6 @@ class TestBatchProcessing:
         results = process_files_batch([str(f) for f in sample_files], spark)
 
         assert len(results) == len(sample_files)
-        # All should process successfully (even if delimiter detection doesn't work perfectly)
         assert all(r.success for r in results), (
             f"Failed files: {[r.file for r in results if not r.success]}"
         )
@@ -409,14 +416,21 @@ class TestSampleFilesDelimiterDetection:
     """Tests for delimiter detection with explicit delimiter override"""
 
     def test_all_sample_files_process_successfully(self, spark, samples_dir):
-        """Verify all sample files can be processed (even without perfect delimiter detection)"""
+        """Verify all sample files can be processed with the correct delimiter"""
+        delimiter_map = {
+            "data_comma": ",",
+            "data_pipe": "|",
+            "data_tab": "\t",
+        }
         sample_files = list(samples_dir.glob("data_*.*"))
 
         if not sample_files:
             pytest.skip("No sample files found in samples directory")
 
         for sample_file in sample_files:
-            result = process_file(str(sample_file), spark)
+            prefix = sample_file.stem  # e.g. "data_comma"
+            delimiter = delimiter_map.get(prefix, ",")
+            result = process_file(str(sample_file), spark, {"delimiter": delimiter})
             assert result.success, (
                 f"Failed to process {sample_file.name}: {result.message}"
             )
@@ -483,6 +497,28 @@ class TestSampleFilesDelimiterDetection:
             assert delimiter not in col, (
                 f"Column name '{col}' contains delimiter '{delimiter}' - parsing failed"
             )
+
+    @pytest.mark.parametrize(
+        "filename",
+        [
+            "data_pipe.out",
+            "data_pipe.dat",
+            "data_comma.txt",
+            "data_tab.tsv",
+        ],
+    )
+    def test_extension_defaults_work_without_explicit_delimiter(
+        self, spark, samples_dir, filename
+    ):
+        """Extension defaults should succeed when file content matches the assumption."""
+        f = samples_dir / filename
+        if not f.exists():
+            pytest.skip(f"{filename} not found")
+
+        result = process_file(str(f), spark)
+        assert result.success, f"{filename} failed: {result.message}"
+        assert result.rows_processed > 0
+        assert len(result.dataframe.columns) == 4
 
 
 class TestCSVWProcessing:

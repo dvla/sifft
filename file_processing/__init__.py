@@ -10,7 +10,12 @@ from .config import (
     TEXT_EXTENSIONS,
 )
 from .exceptions import FileProcessingException
-from .file_processor import process_directory, process_file, process_files_batch
+from .file_processor import (
+    confirm_processed,
+    process_directory,
+    process_file,
+    process_files_batch,
+)
 from .helpers import detect_delimiter
 from .models import FileProcessingResult
 from .registry import (
@@ -29,6 +34,7 @@ __all__ = [
     "process_file",
     "process_files_batch",
     "process_directory",
+    "confirm_processed",
     "FileProcessingResult",
     "FileProcessingException",
     "detect_delimiter",
