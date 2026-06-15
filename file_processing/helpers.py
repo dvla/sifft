@@ -92,33 +92,38 @@ def detect_header(
 ) -> bool:
     """Detect if a delimited file has a header row using heuristics."""
     try:
-        lines = _read_sample_lines(file_path, n=2, storage_options=storage_options)
+        lines = _read_sample_lines(file_path, n=20, storage_options=storage_options)
+        lines = [line for line in lines if line.strip()]
 
         if len(lines) < 2:
             return True
 
-        first_line = lines[0].strip()
-        second_line = lines[1].strip()
+        first_values = lines[0].split(delimiter)
+        data_rows = [line.split(delimiter) for line in lines[1:]]
 
-        if not first_line or not second_line:
+        # Filter to rows with same column count as row 1
+        data_rows = [r for r in data_rows if len(r) == len(first_values)]
+        if not data_rows:
             return True
 
-        first_values = first_line.split(delimiter)
-        second_values = second_line.split(delimiter)
+        first_numeric = sum(1 for v in first_values if _is_numeric(v.strip()))
 
-        if len(first_values) != len(second_values):
+        # Row 1 is all text, data rows have numbers → header
+        data_numeric_counts = [
+            sum(1 for v in row if _is_numeric(v.strip())) for row in data_rows
+        ]
+        avg_data_numeric = sum(data_numeric_counts) / len(data_numeric_counts)
+
+        if first_numeric == 0 and avg_data_numeric > 0:
             return True
 
-        first_numeric_count = sum(1 for v in first_values if _is_numeric(v.strip()))
-        second_numeric_count = sum(1 for v in second_values if _is_numeric(v.strip()))
-
-        if first_numeric_count == 0 and second_numeric_count > 0:
-            return True
-
-        if first_numeric_count > len(first_values) * 0.5:
+        # Row 1 is mostly numeric → not a header
+        if first_numeric > len(first_values) * 0.5:
             return False
 
-        return True
+        # Both row 1 and data rows have the same type profile → no header
+        # (cannot distinguish row 1 from data, default to preserving data)
+        return False
 
     except Exception:
         return True
