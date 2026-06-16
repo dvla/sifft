@@ -14,7 +14,7 @@ The framework needs to convert files from various formats (CSV, TSV, DAT, OUT, E
 - Accept files with up to 10% corrupt records by default (configurable via `max_corrupt_records_percent`). Reject the file if corruption exceeds the threshold.
 - Return `FileProcessingResult` objects by default. Raise `FileProcessingException` only when `raise_on_error=True`.
 - Reject Excel files over 100MB by default (configurable) because pandas loads the entire file into memory.
-- Auto-detect headers using heuristics (numeric vs text first row) when not explicitly specified.
+- Auto-detect headers using multi-row heuristics (see `header-detection.md`). Defaults to no header when row 1 is indistinguishable from data rows.
 - Keep file processing separate from validation — this module only creates DataFrames, it does not validate data quality.
 - Support custom file format handlers via a priority-based registry (`register_handler`).
 
@@ -24,4 +24,4 @@ The framework needs to convert files from various formats (CSV, TSV, DAT, OUT, E
 - The 10% corruption threshold means some bad data gets through by default. Users in strict environments should set this to 0.
 - CSVW metadata adds a network dependency (JSON-LD context resolution) which falls back to raw metadata if the network is unavailable.
 - Excel support is local-only (uses `Path.stat()`) and does not support cloud storage paths.
-- Header auto-detection can misidentify edge cases like all-numeric headers.
+- Header auto-detection defaults to preserving data (no header) when uncertain. See `header-detection.md` for details.
