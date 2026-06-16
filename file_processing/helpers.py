@@ -90,16 +90,29 @@ def detect_delimiter(
 def detect_header(
     file_path: str, delimiter: str, storage_options: dict[str, Any] | None = None
 ) -> bool:
-    """Detect if a delimited file has a header row using heuristics."""
+    """Detect if a delimited file has a header row using heuristics.
+
+    Note: single-column files are a known limitation. The numeric-profile
+    heuristic has no column pattern to compare, so the result is ambiguous.
+    Callers should pass header explicitly for single-column files.
+    """
     try:
         lines = _read_sample_lines(file_path, n=20, storage_options=storage_options)
-        lines = [line for line in lines if line.strip()]
+        lines = [line.strip() for line in lines if line.strip()]
 
         if len(lines) < 2:
             return True
 
         first_values = lines[0].split(delimiter)
         data_rows = [line.split(delimiter) for line in lines[1:]]
+
+        if len(first_values) == 1:
+            logger.warning(
+                "Single-column file %s — header detection ambiguous, "
+                "defaulting to no header. Pass header explicitly if needed.",
+                file_path,
+            )
+            return False
 
         # Filter to rows with same column count as row 1
         data_rows = [r for r in data_rows if len(r) == len(first_values)]
