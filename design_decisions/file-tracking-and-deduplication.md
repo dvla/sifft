@@ -1,7 +1,7 @@
 # File Tracking and Deduplication
 
 **Date:** 2025-03-12
-**Status:** Accepted
+**Status:** Accepted — extended by `deferred-tracking.md`
 
 ## Context
 

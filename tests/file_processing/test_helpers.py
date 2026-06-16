@@ -196,3 +196,39 @@ class TestDetectHeaderRefactored:
 
         # None is the default — should work fine
         assert detect_header(str(f), ",", storage_options=None) is True
+
+
+class TestDetectHeaderAllText:
+    """Tests for issue #14: all-text files should not lose first row."""
+
+    def test_all_text_no_header_returns_false(self, temp_dir):
+        f = temp_dir / "data.csv"
+        f.write_text("ABC,DEF,Some description,2024-01-15\nGHI,JKL,Another value,2024-02-20\n")
+
+        assert detect_header(str(f), ",") is False
+
+    def test_all_text_with_many_rows_returns_false(self, temp_dir):
+        f = temp_dir / "data.csv"
+        rows = [f"CODE{i},DESC{i},VALUE{i},2024-01-{i:02d}" for i in range(1, 21)]
+        f.write_text("\n".join(rows) + "\n")
+
+        assert detect_header(str(f), ",") is False
+
+    def test_text_header_with_numeric_data_returns_true(self, temp_dir):
+        f = temp_dir / "data.csv"
+        lines = ["name,age,score,date"] + [f"Person{i},{20+i},{80+i},2024-01-{i:02d}" for i in range(1, 15)]
+        f.write_text("\n".join(lines) + "\n")
+
+        assert detect_header(str(f), ",") is True
+
+    def test_mixed_text_numeric_header_still_detected(self, temp_dir):
+        f = temp_dir / "data.csv"
+        f.write_text("id,name,category\n1,Alice,A\n2,Bob,B\n3,Carol,C\n")
+
+        assert detect_header(str(f), ",") is True
+
+    def test_no_header_file_preserves_first_row(self, temp_dir):
+        f = temp_dir / "data.csv"
+        f.write_text("RED,CIRCLE,LARGE\nBLUE,SQUARE,SMALL\nGREEN,TRIANGLE,MEDIUM\n")
+
+        assert detect_header(str(f), ",") is False
