@@ -102,7 +102,7 @@ def _process_with_csvw(
             .option("encoding", encoding)
             .option("mode", "PERMISSIVE")
             .option("columnNameOfCorruptRecord", "_corrupt_record")
-            .option("multiLine", "false")
+            .option("multiLine", "true")
         )
 
         if null_values:
@@ -194,7 +194,7 @@ def _process_with_inference(
             .option("mode", "PERMISSIVE")
             .option("columnNameOfCorruptRecord", "_corrupt_record")
             .option("encoding", "UTF-8")
-            .option("multiLine", "false")
+            .option("multiLine", "true")
             .csv(file_path)
         )
 

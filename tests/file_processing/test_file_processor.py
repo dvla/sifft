@@ -653,3 +653,28 @@ class TestConfigurableOptions:
         result = process_file(str(csv_file), spark)
 
         assert result.success
+
+
+class TestQuotedCarriageReturns:
+    """Quoted fields with embedded newlines should not corrupt data."""
+
+    def test_quoted_field_with_carriage_return(self, spark, temp_dir):
+        csv_file = temp_dir / "multiline.csv"
+        csv_file.write_text('name,description,value\nAlice,"line1\r\nline2",100\nBob,"simple",200\n')
+
+        result = process_file(str(csv_file), spark)
+
+        assert result.success
+        assert result.rows_processed == 2
+        rows = result.dataframe.collect()
+        descriptions = {row["description"] for row in rows}
+        assert "line1\r\nline2" in descriptions or "line1\nline2" in descriptions
+
+    def test_quoted_field_with_newline(self, spark, temp_dir):
+        csv_file = temp_dir / "multiline2.csv"
+        csv_file.write_text('id,notes,count\n1,"first\nsecond",10\n2,"third",20\n')
+
+        result = process_file(str(csv_file), spark)
+
+        assert result.success
+        assert result.rows_processed == 2
