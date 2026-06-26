@@ -186,20 +186,27 @@ def _process_with_inference(
             header = options["header"]
 
         infer_schema = options.get("inferSchema", "true")
+        schema = options.get("schema")
 
-        df = (
+        reader = (
             spark.read.option("header", header)
-            .option("inferSchema", infer_schema)
             .option("sep", delimiter)
             .option("mode", "PERMISSIVE")
             .option("columnNameOfCorruptRecord", "_corrupt_record")
             .option("encoding", "UTF-8")
             .option("multiLine", "true")
-            .csv(file_path)
         )
 
+        if schema:
+            reader = reader.schema(schema)
+        else:
+            reader = reader.option("inferSchema", infer_schema)
+
+        df = reader.csv(file_path)
+
+        metadata_source = "schema" if schema else "inference"
         result = _validate_and_return(
-            df, file_path, metadata_source="inference", options=options
+            df, file_path, metadata_source=metadata_source, options=options
         )
 
         result.checksum = compute_file_checksum(

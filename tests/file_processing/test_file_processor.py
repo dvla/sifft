@@ -678,3 +678,80 @@ class TestQuotedCarriageReturns:
 
         assert result.success
         assert result.rows_processed == 2
+
+
+class TestExplicitSchema:
+    """Tests for caller-provided schema in read_options."""
+
+    def test_schema_fixes_column_count_with_control_rows(self, spark, temp_dir):
+        """File with control rows (fewer fields) reads correctly with explicit schema."""
+        from pyspark.sql.types import StringType, StructField, StructType
+
+        dat_file = temp_dir / "data.dat"
+        dat_file.write_text("HDR|2026-06-26|001\nAlice|30|London|Engineer|Active\nBob|25|Manchester|Designer|Active\nTRL|2\n")
+
+        schema = StructType([
+            StructField("name", StringType(), True),
+            StructField("age", StringType(), True),
+            StructField("city", StringType(), True),
+            StructField("role", StringType(), True),
+            StructField("status", StringType(), True),
+        ])
+
+        result = process_file(
+            str(dat_file), spark, {"delimiter": "|", "header": "false", "schema": schema}
+        )
+
+        assert result.success
+        assert len(result.dataframe.columns) == 5
+        assert result.rows_processed == 4  # includes control rows
+
+    def test_schema_ignores_infer_schema(self, spark, temp_dir):
+        """When schema is provided, inferSchema option is ignored."""
+        from pyspark.sql.types import StringType, StructField, StructType
+
+        csv_file = temp_dir / "data.csv"
+        csv_file.write_text("Alice,25,London\nBob,30,Paris\n")
+
+        schema = StructType([
+            StructField("name", StringType(), True),
+            StructField("age", StringType(), True),
+            StructField("city", StringType(), True),
+        ])
+
+        result = process_file(
+            str(csv_file), spark,
+            {"header": "false", "schema": schema, "inferSchema": "true"},
+        )
+
+        assert result.success
+        # All columns are StringType because schema takes precedence over inferSchema
+        assert result.dataframe.schema["age"].dataType == StringType()
+
+    def test_no_schema_infers_as_before(self, spark, temp_dir):
+        """Without schema, behaviour is unchanged (regression guard)."""
+        csv_file = temp_dir / "data.csv"
+        csv_file.write_text("name,age,city\nAlice,25,London\nBob,30,Paris\n")
+
+        result = process_file(str(csv_file), spark)
+
+        assert result.success
+        assert result.rows_processed == 2
+        assert set(result.dataframe.columns) == {"name", "age", "city"}
+
+    def test_single_column_schema_does_not_trigger_delimiter_mismatch(self, spark, temp_dir):
+        """A 1-column schema should not be rejected as a delimiter mismatch."""
+        from pyspark.sql.types import StringType, StructField, StructType
+
+        dat_file = temp_dir / "lines.dat"
+        dat_file.write_text("hello world\nfoo bar\n")
+
+        schema = StructType([StructField("line", StringType(), True)])
+
+        result = process_file(
+            str(dat_file), spark, {"header": "false", "schema": schema}
+        )
+
+        assert result.success
+        assert len(result.dataframe.columns) == 1
+        assert result.rows_processed == 2
