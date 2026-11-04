@@ -28,11 +28,11 @@ dependencies = [
 
 [project.optional-dependencies]
 pyspark3 = [
-    "pyspark>=3.5,<4",
+    "pyspark>=3.5,<5",
     "delta-spark>=3.2,<4",
 ]
 pyspark4 = [
-    "pyspark>=4,<5",
+    "pyspark<5,>=4",
     "delta-spark>=4,<5",
 ]
 dev = [
